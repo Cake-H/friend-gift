@@ -141,7 +141,7 @@ public class RegisterJframe extends JFrame implements ActionListener, Database {
                     jDialog.getContentPane().add(jButton);
                     jButton.addActionListener(e1 -> {
                         jDialog.setVisible(false);
-                        new LoginJframe();
+                        new LoginFX();
                     });
                     this.dispose();
                 }

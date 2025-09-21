@@ -335,7 +335,7 @@ public class GameOneJframe extends JFrame implements KeyListener, ActionListener
             initImage();
         } else if (obj == reLoginItem) {
             this.dispose();
-            new LoginJframe();
+            new LoginFX();
         } else if (obj == closeItem) {
             System.exit(0);//直接关闭虚拟机
         } else if (obj == accountItem) {
