@@ -7,7 +7,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Random;
 
-public class GameOneJframe extends JFrame implements KeyListener, ActionListener {
+public class GameOneJframe extends JFrame implements KeyListener, ActionListener, TimerListener {
     //游戏界面设计
 
     int[][] data = new int[4][4]; //创建二维数组，加载图片时根据它的顺序加载
@@ -40,6 +40,11 @@ public class GameOneJframe extends JFrame implements KeyListener, ActionListener
     JMenuItem closeItem = new JMenuItem("关闭游戏");
 
     JMenuItem accountItem = new JMenuItem("公众号");
+
+    JFrame victoryJFrame = new JFrame("恭喜通关！"); // 通过弹窗
+    JButton victoryButton = new JButton("确定"); //胜利提示框中的按键
+
+    GameTimer gameTimer; // 计时器
 
     public GameOneJframe() {
         initJFrame();//初始化代码
@@ -138,19 +143,31 @@ public class GameOneJframe extends JFrame implements KeyListener, ActionListener
         this.setJMenuBar(jMenuBar);
     }
 
+    /**
+     * 通关后弹窗提示，并衔接下一关
+     */
     public void initVictoryJFrame() {
-        JFrame victoryJFrame = new JFrame("恭喜通关！");
-        victoryJFrame.setSize(100, 50);
+
+        victoryJFrame.setSize(300, 200);
         victoryJFrame.setLocationRelativeTo(null);
         victoryJFrame.setAlwaysOnTop(true);
-        victoryJFrame.add(new TextField("恭喜通过本关！点击确定进入下一章~"));
-        victoryJFrame.add(new Button("确定"));
+        victoryJFrame.setLayout(null);
+
+        TextField victoryTextField = new TextField("恭喜通过本关！点击确定3秒后进入下一章~");
+        victoryTextField.setBounds(5, 5, 300, 20);
+        victoryTextField.setBackground(null);
+        victoryTextField.setEditable(false);
+
+        victoryButton.setBounds(110, 80, 60, 40);
+
+        victoryJFrame.getContentPane().add(victoryTextField, BorderLayout.NORTH);
+        victoryJFrame.getContentPane().add(victoryButton);
 
         victoryJFrame.setVisible(true);
 
-        victoryJFrame.addKeyListener(this);
-
+        victoryButton.addActionListener(this);
     }
+
     public void initImage() {
         //清空原本已经出现的所有图片
         this.getContentPane().removeAll();
@@ -345,6 +362,36 @@ public class GameOneJframe extends JFrame implements KeyListener, ActionListener
 
         } else if (obj == life) {
 
+        } else if (obj == victoryButton) {
+            victoryJFrame.remove(victoryButton);
+            // 初始化3秒计时器，并注册当前类为监听器
+            gameTimer = new GameTimer(4, this);
+            gameTimer.setBounds(10, 50, 150, 20);
+            // 将计时器添加到弹窗
+            victoryJFrame.add(gameTimer);
+            // 启动计时器
+            gameTimer.start();
         }
+    }
+
+    // 实现TimerListener接口方法 - 时间变化时调用
+    @Override
+    public void onTimeChanged(int remainingSeconds) {
+        System.out.println("还剩余" + remainingSeconds + "秒");
+    }
+
+
+    // 实现TimerListener接口方法 - 时间结束时调用
+    @Override
+    public void onTimeExpired() {
+        gameTimer.stop();
+        // 关闭弹窗
+        victoryJFrame.dispose();
+        this.dispose(); // 关闭第一个游戏窗口
+        new GameTwoJframe(); // 打开第二个游戏
+    }
+
+    public static void main(String[] args) {
+        new GameOneJframe();
     }
 }
