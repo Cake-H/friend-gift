@@ -1,9 +1,13 @@
+package friend_gift_Swing;
+
+import friend_gift_JavaFX.LoginFX;
+
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Random;
 
-public class RegisterJframe extends JFrame implements ActionListener, Database {
+public class RegisterJframe extends JFrame implements ActionListener, Database_Jframe {
     JLabel registerTips = new JLabel();
 
     JTextField idField = new JTextField();
@@ -126,7 +130,7 @@ public class RegisterJframe extends JFrame implements ActionListener, Database {
                     captchaField.setText("");
                     setCaptcha();
                 } else {
-                    players.add(new Player(id, password));
+                    Database_Jframe.players.add(new Player_Jframe(id, password));
                     JDialog jDialog = new JDialog();
                     JLabel jLabel = new JLabel("注册成功！快登录游戏吧！");
                     jLabel.setBounds(50, 20, 200, 60);
@@ -150,19 +154,19 @@ public class RegisterJframe extends JFrame implements ActionListener, Database {
     }
 
     @Override
-    public void add(Player player) {
-        players.add(player);
+    public void add(Player_Jframe playerJframe) {
+        Database_Jframe.players.add(playerJframe);
     }
 
     @Override
-    public void delete(Player player) {
-        players.remove(player);
+    public void delete(Player_Jframe playerJframe) {
+        Database_Jframe.players.remove(playerJframe);
     }
 
     @Override
     public int findPlayerId(String id) {
-        for (int i = 0; i < players.size(); i++) {
-            if (players.get(i).getId().equals(id)) {
+        for (int i = 0; i < Database_Jframe.players.size(); i++) {
+            if (Database_Jframe.players.get(i).getId().equals(id)) {
                 return i;
             }
         }

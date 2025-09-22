@@ -1,3 +1,7 @@
+package friend_gift_Swing;
+
+import friend_gift_JavaFX.LoginFX;
+
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
 import java.awt.*;

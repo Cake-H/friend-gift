@@ -1,10 +1,12 @@
-public class Player {
+package friend_gift_Swing;
+
+public class Player_Jframe {
     //储存游客信息
 
     private String id;
     private String password;
 
-    Player(String id, String password) {
+    Player_Jframe(String id, String password) {
         this.id = id;
         this.password = password;
     }

@@ -1,3 +1,5 @@
+package friend_gift_JavaFX;
+
 import javax.swing.*;
 
 /*

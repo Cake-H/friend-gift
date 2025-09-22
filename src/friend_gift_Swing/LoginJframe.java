@@ -1,3 +1,5 @@
+package friend_gift_Swing;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -8,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class LoginJframe extends JFrame implements ActionListener, Database {
+public class LoginJframe extends JFrame implements ActionListener, Database_Jframe {
     // 颜色定义
     private static final Color PRIMARY_COLOR = new Color(52, 152, 219);
     private static final Color SECONDARY_COLOR = new Color(41, 128, 185);
@@ -31,8 +33,8 @@ public class LoginJframe extends JFrame implements ActionListener, Database {
     JTextField captchaField = new JTextField();
 
     JButton captchaButton = new JButton();
-    Player player = new Player("zhouqixuan", "20041201");
-    List<Player> players = new ArrayList<>(); // 添加players列表
+    Player_Jframe playerJframe = new Player_Jframe("zhouqixuan", "20041201");
+    List<Player_Jframe> playerJframes = new ArrayList<>(); // 添加players列表
 
     JLabel loginTips = new JLabel(); // 设置是否登录成功的提示
     JLabel titleLabel = new JLabel("拼图游戏"); // 标题
@@ -45,7 +47,7 @@ public class LoginJframe extends JFrame implements ActionListener, Database {
         initTextField(); // 添加文本框
         initImage(); // 添加图片
 
-        players.add(player);
+        playerJframes.add(playerJframe);
 
         this.setVisible(true);
     }
@@ -284,7 +286,7 @@ public class LoginJframe extends JFrame implements ActionListener, Database {
                     captchaField.setText("");
                     setCaptcha();
                 } else {
-                    if (players.get(indexId).getPassword().equals(password)) {
+                    if (playerJframes.get(indexId).getPassword().equals(password)) {
                         this.dispose();
                         new GameOneJframe();
                     } else {
@@ -306,19 +308,19 @@ public class LoginJframe extends JFrame implements ActionListener, Database {
     }
 
     @Override
-    public void add(Player player) {
-        players.add(player);
+    public void add(Player_Jframe playerJframe) {
+        playerJframes.add(playerJframe);
     }
 
     @Override
-    public void delete(Player player) {
-        players.remove(player);
+    public void delete(Player_Jframe playerJframe) {
+        playerJframes.remove(playerJframe);
     }
 
     @Override
     public int findPlayerId(String id) {
-        for (int i = 0; i < players.size(); i++) {
-            if (players.get(i).getId().equals(id)) {
+        for (int i = 0; i < playerJframes.size(); i++) {
+            if (playerJframes.get(i).getId().equals(id)) {
                 return i;
             }
         }

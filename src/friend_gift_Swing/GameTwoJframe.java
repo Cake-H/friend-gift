@@ -1,3 +1,5 @@
+package friend_gift_Swing;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
