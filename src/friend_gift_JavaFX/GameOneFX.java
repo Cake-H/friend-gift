@@ -113,7 +113,7 @@ public class GameOneFX extends Application {
         puzzleGrid = new GridPane();
         puzzleGrid.setHgap(0);
         puzzleGrid.setVgap(0);
-        puzzleGrid.setPadding(new Insets(50, 0, 0, 0));
+        puzzleGrid.setPadding(new Insets(50, 30, 0, 0));
 
         // 加载拼图图片
         loadPuzzleImages();
@@ -227,7 +227,11 @@ public class GameOneFX extends Application {
                         ImageView imageView = new ImageView(new Image("file:" + path + value + ".jpg"));
                         imageView.setFitWidth(105);  // 固定宽度，确保拼图对齐
                         imageView.setFitHeight(105); // 固定高度，确保拼图对齐
-                        imageView.setStyle("-fx-border-color: #cccccc;");  // 灰色边框，区分拼图块
+                        imageView.setStyle("" +
+                                "-fx-border-width: 2px;"  + // 边框宽度
+                                "-fx-border-style: solid;" +  // 边框样式（实线）
+                                "-fx-border-color: #cccccc;"  // 边框颜色（浅灰）
+                        );  // 灰色边框，区分拼图块
                         // 将拼图块添加到网格的(j,i)位置
                         puzzleGrid.add(imageView, j, i);
                     } catch (Exception e) {
@@ -419,7 +423,7 @@ public class GameOneFX extends Application {
                     // 关闭当前游戏，打开下一关
                     primaryStage.close();
                     try {
-                        // new GameTwoFX().start(new Stage());
+                        new GameTwoFX().start(new Stage());
                     } catch (Exception ex) {
                         ex.printStackTrace();
                     }
