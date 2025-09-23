@@ -40,7 +40,7 @@ public class GameTwoFX extends Application {
     private double stripX = 10;
     private double stripY = 500;
     private int stripWidth = 60;
-    private int stripHeight = 5;
+    private int stripHeight = 6;
     private double s_dx = 5;  // 长条x方向速度
     private double s_dy = 5;  // 长条y方向速度
 
@@ -98,7 +98,6 @@ public class GameTwoFX extends Application {
         initRound(1);
     }
 
-
     // ========================= 窗口初始化 =========================
     /**
      * 初始化主窗口属性（大小、标题、关闭方式等）
@@ -107,7 +106,7 @@ public class GameTwoFX extends Application {
     private void initStage(Stage primaryStage) {
         primaryStage.setTitle("不要让小球掉落~");  // 窗口标题（与原 Swing 一致）
         primaryStage.setWidth(603);                // 窗口宽度（与原 Swing 一致）
-        primaryStage.setHeight(680);               // 窗口高度（与原 Swing 一致）
+        primaryStage.setHeight(700);               // 窗口高度（与原 Swing 一致）
         primaryStage.setResizable(false);          // 禁止窗口缩放（避免游戏区域变形）
         primaryStage.centerOnScreen();             // 窗口居中（替代原 setLocationRelativeTo(null)）
         // 窗口关闭时停止所有定时器（防止内存泄漏）
@@ -168,7 +167,6 @@ public class GameTwoFX extends Application {
         return menuBar;
     }
 
-
     // ========================= 按键事件初始化 =========================
     /**
      * 绑定按键事件（方向键控制长条移动，A/D键调整长条宽度）
@@ -228,7 +226,6 @@ public class GameTwoFX extends Application {
         });
     }
 
-
     // ========================= 关卡初始化（核心逻辑）=========================
     /**
      * 初始化指定关卡（复位位置、设置速度、启动定时器）
@@ -252,7 +249,6 @@ public class GameTwoFX extends Application {
         drawGame();
     }
 
-
     // ========================= 游戏状态复位 =========================
     /**
      * 复位游戏状态（小球/长条位置、按键状态、倒计时、长条宽度）
@@ -275,7 +271,6 @@ public class GameTwoFX extends Application {
         remainingSeconds = 60;
         countDownLabel.setText("剩余时间：" + remainingSeconds + "秒");
     }
-
 
     // ========================= 关卡速度设置（难度控制）=========================
     /**
@@ -362,7 +357,6 @@ public class GameTwoFX extends Application {
         circleY += c_dy;
     }
 
-
     // ========================= 长条位置更新 =========================
     /**
      * 根据按键状态更新长条位置（边界检测：避免长条超出窗口）
@@ -385,7 +379,6 @@ public class GameTwoFX extends Application {
             stripY += s_dy;
         }
     }
-
 
     // ========================= 碰撞检测（核心逻辑）=========================
     /**
@@ -420,7 +413,6 @@ public class GameTwoFX extends Application {
         }
     }
 
-
     // ========================= 绘制游戏元素 =========================
     /**
      * 绘制游戏所有元素：背景、小球、长条、关卡文字
@@ -444,7 +436,6 @@ public class GameTwoFX extends Application {
         gc.fillText("第" + currentRound + "关", 20, 30);  // 文字位置（20,30）
     }
 
-
     // ========================= 菜单点击处理（重新开始关卡）=========================
     /**
      * 处理"重新开始"菜单点击：验证关卡权限（需先通前一关），再初始化对应关卡
@@ -464,7 +455,6 @@ public class GameTwoFX extends Application {
         // 初始化目标关卡
         initRound(round);
     }
-
 
     /**
      * 倒计时结束：标记当前关卡胜利，切换到下一关或显示通关弹窗（修复后）
@@ -491,7 +481,6 @@ public class GameTwoFX extends Application {
         });
     }
 
-
     /**
      * 小球掉落时显示游戏结束弹窗（修复后：推迟到动画周期外执行）
      */
@@ -507,7 +496,6 @@ public class GameTwoFX extends Application {
         });
     }
 
-
     // ========================= 通用弹窗工具 =========================
     /**
      * 显示弹窗（提示/警告/通关信息，替代原 JOptionPane）
@@ -515,14 +503,26 @@ public class GameTwoFX extends Application {
      * @param content 弹窗内容
      */
     private void showAlert(String title, String content) {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setTitle(title);
-        alert.setHeaderText(null);  // 隐藏头部文本
-        alert.setContentText(content);
-        alert.initOwner(gameCanvas.getScene().getWindow());  // 弹窗依附于游戏窗口
-        alert.showAndWait();  // 阻塞式弹窗（不关闭则无法操作游戏）
-    }
+        ButtonType replayButton = new ButtonType("再来一次");
+        ButtonType determineButton = new ButtonType("确定");
 
+        Alert alert = new Alert(
+                Alert.AlertType.INFORMATION,
+                content,
+                replayButton,
+                determineButton
+        );
+        alert.setTitle(title);
+        alert.setContentText(content);
+        alert.setHeaderText(null);  // 隐藏头部文本
+
+        alert.initOwner(gameCanvas.getScene().getWindow());  // 弹窗依附于游戏窗口
+        alert.showAndWait().ifPresent(buttonType -> {
+            if(buttonType == replayButton) {
+                handleReplay(currentRound); // 重启当前关卡
+            }
+        });  // 阻塞式弹窗（不关闭则无法操作游戏）
+    }
 
     // ========================= 停止所有定时器 =========================
     /**
@@ -539,7 +539,6 @@ public class GameTwoFX extends Application {
             countDownTimeline.stop();
         }
     }
-
 
     // ========================= 程序启动入口 =========================
     public static void main(String[] args) {
