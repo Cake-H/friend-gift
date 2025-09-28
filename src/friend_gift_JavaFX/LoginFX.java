@@ -73,6 +73,7 @@ public class LoginFX extends Application implements Database {
         primaryStage.setWidth(500); // 设置宽度
         primaryStage.setHeight(600); // 设置高度
         primaryStage.setResizable(false); // 禁止窗口缩放
+        primaryStage.getIcons().add(new Image("file:picture/login/bg.jpg"));
 
         // 初始化数据
         players.add(player);

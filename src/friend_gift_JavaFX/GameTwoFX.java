@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
@@ -59,7 +60,6 @@ public class GameTwoFX extends Application {
     // 倒计时时间：每关60秒（对应原 GameTimer 的60秒）
     private int remainingSeconds = 60;
 
-
     // ========================= 程序入口：JavaFX 启动方法 =========================
     @Override
     public void start(Stage primaryStage) {
@@ -107,12 +107,12 @@ public class GameTwoFX extends Application {
         primaryStage.setTitle("不要让小球掉落~");  // 窗口标题（与原 Swing 一致）
         primaryStage.setWidth(603);                // 窗口宽度（与原 Swing 一致）
         primaryStage.setHeight(700);               // 窗口高度（与原 Swing 一致）
+        primaryStage.getIcons().add(new Image("file:picture\\gameTwo\\tq_tb.png"));
         primaryStage.setResizable(false);          // 禁止窗口缩放（避免游戏区域变形）
         primaryStage.centerOnScreen();             // 窗口居中（替代原 setLocationRelativeTo(null)）
         // 窗口关闭时停止所有定时器（防止内存泄漏）
         primaryStage.setOnCloseRequest(e -> stopAllTimelines());
     }
-
 
     // ========================= 倒计时标签初始化 =========================
     /**
@@ -124,7 +124,6 @@ public class GameTwoFX extends Application {
         countDownLabel.setTextFill(Color.RED);            // 文字红色（突出计时）
         countDownLabel.setPadding(new javafx.geometry.Insets(5));  // 内边距（避免贴边）
     }
-
 
     // ========================= 游戏画布初始化 =========================
     /**

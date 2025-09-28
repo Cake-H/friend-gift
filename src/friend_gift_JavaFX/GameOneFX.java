@@ -36,7 +36,7 @@ public class GameOneFX extends Application {
     };
 
     private int step = 0; // 步数统计
-    private Stage primaryStage;
+    private Stage primaryStage; // 主界面
     private GridPane puzzleGrid; // 拼图网格
     private Label stepLabel; // 步数标签
     private boolean showingCompleteImage = false; // 是否显示完整图片
@@ -56,6 +56,7 @@ public class GameOneFX extends Application {
         primaryStage.setTitle("拼图单机版 v1.0");
         primaryStage.setWidth(603);
         primaryStage.setHeight(680);
+        primaryStage.getIcons().add(new Image("file:picture\\gameOne\\pt_tb.png"));
         primaryStage.setResizable(false);
         primaryStage.centerOnScreen();
     }
@@ -86,7 +87,7 @@ public class GameOneFX extends Application {
             case 0:
             case 1:
             case 2:
-                path = "picture\\life\\";
+                path = "picture\\gameOne\\life\\";
                 break;
         }
     }
@@ -124,7 +125,7 @@ public class GameOneFX extends Application {
         gameContainer.setAlignment(Pos.TOP_LEFT);
 
         // 添加背景图片
-        ImageView background = new ImageView(new Image("file:picture\\game\\bg.jpg"));
+        ImageView background = new ImageView(new Image("file:picture\\gameOne\\bg.jpg"));
         background.setFitWidth(520);
         background.setFitHeight(580);
 
