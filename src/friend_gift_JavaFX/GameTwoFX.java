@@ -1,6 +1,8 @@
 package friend_gift_JavaFX;
 
+import friend_gift_JavaFX.gameThreeFX.GameThreeFX;
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.canvas.Canvas;
@@ -11,6 +13,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.animation.Timeline;
 import javafx.animation.KeyFrame;
@@ -60,11 +63,15 @@ public class GameTwoFX extends Application {
     // 倒计时时间：每关60秒（对应原 GameTimer 的60秒）
     private int remainingSeconds = 60;
 
+    private Stage primaryStage;
+
     // ========================= 程序入口：JavaFX 启动方法 =========================
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage stage) {
+        this.primaryStage = stage;
+
         // 1. 初始化主窗口（Stage 对应 Swing JFrame）
-        initStage(primaryStage);
+        initStage();
 
         // 2. 初始化布局（BorderPane 对应原 BorderLayout，分上中下区域）
         BorderPane root = new BorderPane();
@@ -101,9 +108,8 @@ public class GameTwoFX extends Application {
     // ========================= 窗口初始化 =========================
     /**
      * 初始化主窗口属性（大小、标题、关闭方式等）
-     * @param primaryStage 主窗口（JavaFX 顶层容器）
      */
-    private void initStage(Stage primaryStage) {
+    private void initStage() {
         primaryStage.setTitle("不要让小球掉落~");  // 窗口标题（与原 Swing 一致）
         primaryStage.setWidth(603);                // 窗口宽度（与原 Swing 一致）
         primaryStage.setHeight(700);               // 窗口高度（与原 Swing 一致）
@@ -214,6 +220,11 @@ public class GameTwoFX extends Application {
                     break;
                 case DOWN:
                     downPressed = false;
+                    break;
+                case V: // 按一下V键，则直接通过
+                    // 停止所有定时器
+                    stopAllTimelines();
+                    showVictoryDialog();
                     break;
             }
             // 所有按键都释放时，停止长条定时器（节省资源）
@@ -389,7 +400,7 @@ public class GameTwoFX extends Application {
     private void checkCollision() {
         // 1. 碰撞长条：小球底部接触长条顶部，且小球x范围与长条x范围重叠
         if (circleX >= stripX - 2 &&                // 小球左边界 <= 长条右边界
-                circleX + circleSize <= stripX + stripWidth + 2 &&  // 小球右边界 >= 长条左边界
+                circleX <= stripX + stripWidth + 2 &&  // 小球右边界 >= 长条左边界
                 circleY + circleSize >= stripY  - 1&&  // 小球底部 >= 长条顶部
                 circleY + circleSize <= stripY + c_dy) { // 小球底部 <= 长条顶部+小球y速度（避免穿透）
             c_dy = -c_dy;  // y方向速度反向（小球反弹向上）
@@ -475,9 +486,60 @@ public class GameTwoFX extends Application {
                 initRound(3);  // 切换到第三关
             } else if (currentRound == 3) {
                 isRoundThreeWin = true;
-                showAlert("通关提示", "恭喜通关所有关卡！");
+                showVictoryDialog();
             }
         });
+    }
+
+    // 显示胜利弹窗
+    private void showVictoryDialog() {
+        Stage dialog = new Stage();
+        dialog.initOwner(primaryStage);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("恭喜通过所有关卡！");
+        dialog.setWidth(500);
+        dialog.setHeight(200);
+        dialog.centerOnScreen();
+
+        VBox content = new VBox(20);
+        content.setPadding(new Insets(20));
+        content.setAlignment(Pos.CENTER);
+
+        Label message = new Label("哟哟哟有点实力喔！点击确定3秒后进入下一章~");
+        message.setAlignment(Pos.CENTER);
+
+        // 倒计时标签
+        Label countdownLabel = new Label();
+
+        Button confirmBtn = new Button("确定");
+        confirmBtn.setOnAction(e -> {
+            content.getChildren().remove(confirmBtn);
+            content.getChildren().add(countdownLabel);
+
+            // 3秒倒计时
+            int[] seconds = {3};
+            Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
+                seconds[0]--;
+                countdownLabel.setText("准备进入下一关：" + seconds[0] + "秒");
+
+                if (seconds[0] <= 0) {
+                    dialog.close();
+                    // 关闭当前游戏，打开下一关
+                    primaryStage.close();
+                    try {
+                        new GameThreeFX().start(new Stage());
+                    } catch (Exception ex) {
+                        ex.printStackTrace();
+                    }
+                }
+            }));
+            timeline.setCycleCount(3);
+            timeline.play();
+        });
+
+        content.getChildren().addAll(message, confirmBtn);
+        dialog.setScene(new Scene(content));
+        dialog.show();
     }
 
     /**
