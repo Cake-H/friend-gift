@@ -13,18 +13,20 @@ import javafx.scene.text.Font;
 import javafx.stage.Popup;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
 import javafx.animation.PauseTransition;
 
-public class LoginFX extends Application implements Database {
+public class LoginFX implements Database {
     // 颜色定义
-    private static final Color PRIMARY_COLOR = new Color(52/255.0, 152/255.0, 219/255.0, 1);
-    private static final Color SECONDARY_COLOR = new Color(41/255.0, 128/255.0, 185/255.0, 1);
-    private static final Color TEXT_COLOR = new Color(51/255.0, 51/255.0, 51/255.0, 1);
-    private static final Color LIGHT_GRAY = new Color(245/255.0, 245/255.0, 245/255.0, 1);
-    private static final Color ERROR_COLOR = new Color(231/255.0, 76/255.0, 60/255.0, 1);
+    private static final Color PRIMARY_COLOR = new Color(52 / 255.0, 152 / 255.0, 219 / 255.0, 1);
+    private static final Color SECONDARY_COLOR = new Color(41 / 255.0, 128 / 255.0, 185 / 255.0, 1);
+    private static final Color TEXT_COLOR = new Color(51 / 255.0, 51 / 255.0, 51 / 255.0, 1);
+    private static final Color LIGHT_GRAY = new Color(245 / 255.0, 245 / 255.0, 245 / 255.0, 1);
+    private static final Color ERROR_COLOR = new Color(231 / 255.0, 76 / 255.0, 60 / 255.0, 1);
 
     // 组件定义
     private Button loginButton = new Button("登录"); // 登录按钮
@@ -61,19 +63,26 @@ public class LoginFX extends Application implements Database {
 
     // 创建主面板：StackPane（根布局容器）堆叠布局，组件按顺序堆叠，后加的在上面
     private StackPane root = new StackPane();
-    /**
-     * JavaFX 程序核心方法：初始化窗口和UI布局
-     * 类似 Swing 中在 main 方法里创建JFrame并添加组件
-     * @param primaryStage 主窗口
-     */
-    @Override
-    public void start(Stage primaryStage) {
-        // 初始化主窗口属性
-        primaryStage.setTitle("登入幻想星球"); // 设置标题
-        primaryStage.setWidth(500); // 设置宽度
-        primaryStage.setHeight(600); // 设置高度
-        primaryStage.setResizable(false); // 禁止窗口缩放
-        primaryStage.getIcons().add(new Image("file:picture/login/bg.jpg"));
+
+    // 登录成功回调接口（通知MainPage切换场景）
+    public interface OnLoginSuccessListener {
+        void onLoginSuccess(); // 登录成功时调用
+    }
+
+    private OnLoginSuccessListener loginSuccessListener;
+
+    // 给外部设置回调方法
+    public void setOnLooginSuccessListener(OnLoginSuccessListener listener) {
+        this.loginSuccessListener = listener;
+    }
+
+    public LoginFX() {
+//        // 初始化主窗口属性
+//        primaryStage.setTitle("登入幻想星球"); // 设置标题
+//        primaryStage.setWidth(500); // 设置宽度
+//        primaryStage.setHeight(600); // 设置高度
+//        primaryStage.setResizable(false); // 禁止窗口缩放
+//        primaryStage.getIcons().add(new Image("file:picture/login/bg.jpg"));
 
         // 初始化数据
         players.add(player);
@@ -102,16 +111,20 @@ public class LoginFX extends Application implements Database {
         // 将登录面板加入根布局
         root.getChildren().add(loginPanel);
 
-        // 创建场景：JavaF 特有概念，包含根布局和窗口大小
-        // 类似 Swing中把根容器加入JFrame，Scene 是组件的“舞台场景”
-        Scene scene = new Scene(root);
-        primaryStage.setScene(scene); // 主窗口设置场景
-
-        // 显示窗口
-        primaryStage.show();
+//        // 创建场景：JavaF 特有概念，包含根布局和窗口大小
+//        // 类似 Swing中把根容器加入JFrame，Scene 是组件的“舞台场景”
+//        Scene scene = new Scene(root);
+//        primaryStage.setScene(scene); // 主窗口设置场景
+//
+//        // 显示窗口
+//        primaryStage.show();
 
         // 设置事件监听（按钮点击、输入框变化等）
-        setEventListeners(primaryStage);
+        setEventListeners();
+    }
+
+    public StackPane getLoginRoot() {
+        return root;
     }
 
     /**
@@ -226,13 +239,14 @@ public class LoginFX extends Application implements Database {
 
     /**
      * 统一设置TextField样式
+     *
      * @param textField 要设置样式的输入框
      */
     private void styleTextField(TextField textField) {
         textField.setFont(new Font("微软雅黑", 16));
         textField.setPrefSize(220, 40);
         textField.setBorder(new Border(new BorderStroke(
-                new Color(200/255.0, 200/255.0, 200/255.0, 1), // 边框颜色（浅灰）
+                new Color(200 / 255.0, 200 / 255.0, 200 / 255.0, 1), // 边框颜色（浅灰）
                 BorderStrokeStyle.SOLID, // 边框样式（实线）
                 new CornerRadii(3), // 边框圆角
                 new BorderWidths(1) // 边框宽度
@@ -242,8 +256,9 @@ public class LoginFX extends Application implements Database {
 
     /**
      * 统一设置 Button 样式
-     * @param button 要设置样式的按钮
-     * @param bgColor 按钮背景色
+     *
+     * @param button    要设置样式的按钮
+     * @param bgColor   按钮背景色
      * @param textColor 按钮文本色
      */
     private void styleButton(Button button, Color bgColor, Color textColor) {
@@ -346,9 +361,8 @@ public class LoginFX extends Application implements Database {
 
     /**
      * 绑定所有组件的事件监听
-     * @param primaryStage 主窗口（用于登录成功后关闭）
      */
-    private void setEventListeners(Stage primaryStage) {
+    private void setEventListeners() {
         // 登录按钮事件
         loginButton.setOnAction(e -> handleLogin());
 
@@ -389,11 +403,11 @@ public class LoginFX extends Application implements Database {
                 setCaptcha();
             } else {
                 if (players.get(indexId).getPassword().equals(password)) {
-                    // 登录成功，关闭当前窗口，打开游戏窗口
-                    Stage stage = (Stage) loginButton.getScene().getWindow();
-                    stage.close();
-                    // 打开游戏一窗口
-                    new GameOneFX().start(new Stage());
+                    // 登录成功：调用回调（让MainPage切换场景）
+                    if (loginSuccessListener != null) {
+                        loginSuccessListener.onLoginSuccess();
+                    }
+
                 } else {
                     loginTips.setText("您输入的密码不正确哟，密码是8位数");
                     passwordField.setText("");
@@ -461,7 +475,4 @@ public class LoginFX extends Application implements Database {
         return -1;
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 }

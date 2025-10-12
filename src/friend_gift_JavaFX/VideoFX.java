@@ -1,9 +1,7 @@
 package friend_gift_JavaFX;
 
-import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
@@ -14,41 +12,38 @@ import javafx.scene.media.MediaPlayer;
 import javafx.scene.media.MediaView;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+
 import java.io.File;
 import java.net.URI;
 
-public class HomeFX extends Application {
+public class VideoFX {
     private MediaPlayer mediaPlayer; // 视频播放器核心
     private Slider progressSlider;   // 视频进度条
     private BorderPane root;         // 根布局（提前初始化）
     private Button lastButton = new Button("进入最终章"); // 进入最终章按钮（补充文本，避免空按钮）
 
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        initStage(primaryStage);
-
-        // 【关键修复1：提前初始化root，避免空指针】
+    public VideoFX(Stage stage) {
         root = new BorderPane();
 
         // 视频路径（建议用File+URI处理，避免手动拼接"file:"可能出错）
         File videoFile = new File("C:/Users/86135/Desktop/e1bf07dafcb402b1f2d5bb03694c8567.mp4");
-        initVideo(videoFile, primaryStage);
+        initVideo(videoFile, stage);
 
-        // 此时root一定非空，安全创建场景
-        Scene scene = new Scene(root, 800, 600);
-        primaryStage.setScene(scene);
-        primaryStage.show();
     }
 
-    private void initStage(Stage primaryStage) {
-        primaryStage.setTitle("现在是幻想时间~");
-        primaryStage.setWidth(800);
-        primaryStage.setHeight(600);
-        primaryStage.setResizable(true);
-        primaryStage.centerOnScreen();
+    public BorderPane getVideoFXRoot() {
+        return root;
     }
 
-    private void initVideo(File videoFile, Stage primaryStage) {
+//    private void initStage(Stage primaryStage) {
+//        primaryStage.setTitle("现在是幻想时间~");
+//        primaryStage.setWidth(800);
+//        primaryStage.setHeight(600);
+//        primaryStage.setResizable(true);
+//        primaryStage.centerOnScreen();
+//    }
+
+    private void initVideo(File videoFile, Stage stage) {
         try {
             // 1. 先检查视频文件（排除文件不存在/不是MP4的问题）
             if (!videoFile.exists()) {
@@ -69,8 +64,8 @@ public class HomeFX extends Application {
             MediaView mediaView = new MediaView(mediaPlayer);
             mediaView.setPreserveRatio(true); // 保持宽高比，避免拉伸
             // 视频尺寸跟随窗口（减去边距，避免贴边）
-            mediaView.fitWidthProperty().bind(primaryStage.widthProperty().subtract(40));
-            mediaView.fitHeightProperty().bind(primaryStage.heightProperty().subtract(100));
+            mediaView.fitWidthProperty().bind(stage.widthProperty().subtract(40));
+            mediaView.fitHeightProperty().bind(stage.heightProperty().subtract(100));
 
             // 5. 创建控制栏（含修复后的进度条）
             HBox controlBar = createControlBar();
@@ -84,15 +79,6 @@ public class HomeFX extends Application {
 //            BorderPane.setMargin(lastButton, new Insets(10));
             BorderPane.setAlignment(controlBar, Pos.CENTER);
             BorderPane.setMargin(controlBar, new Insets(10));
-
-            // 7. 窗口关闭时释放资源
-            primaryStage.setOnCloseRequest(e -> {
-                if (mediaPlayer != null) {
-                    mediaPlayer.stop();
-                    mediaPlayer.dispose();
-                }
-            });
-
         } catch (Exception e) {
             // 【关键修复2：加载失败时给root添加错误提示，避免空指针】
             String errorMsg = "视频加载失败：" + e.getMessage() + "\n\n" +
@@ -110,6 +96,13 @@ public class HomeFX extends Application {
             // 打印错误日志，方便调试
             System.err.println(errorMsg);
             e.printStackTrace();
+        }
+    }
+
+    public void stopAllPlayer() {
+        if (mediaPlayer != null) {
+            mediaPlayer.stop();
+            mediaPlayer.dispose();
         }
     }
 
@@ -168,7 +161,4 @@ public class HomeFX extends Application {
         return controlBar;
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 }

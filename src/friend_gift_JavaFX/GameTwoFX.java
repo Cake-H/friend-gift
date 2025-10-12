@@ -24,7 +24,7 @@ import javafx.application.Platform; // 新增：用于推迟UI任务执行
  * JavaFX 小球反弹游戏：控制长条接住小球，防止掉落，共3个关卡，计时结束通关
  * 核心逻辑：方向键控制长条移动，小球碰撞边界/长条后反弹，倒计时结束则通关下一关
  */
-public class GameTwoFX extends Application {
+public class GameTwoFX {
     // ========================= 游戏核心变量（对应原 Swing 成员变量）=========================
     private Timeline ballTimeline;    // 小球移动定时器（替代 Swing Timer）
     private Timeline stripTimeline;   // 长条移动定时器（替代 Swing Timer）
@@ -63,18 +63,20 @@ public class GameTwoFX extends Application {
     // 倒计时时间：每关60秒（对应原 GameTimer 的60秒）
     private int remainingSeconds = 60;
 
-    private Stage primaryStage;
+    private BorderPane root;
 
-    // ========================= 程序入口：JavaFX 启动方法 =========================
-    @Override
-    public void start(Stage stage) {
-        this.primaryStage = stage;
+    public interface OnVictoryListener {
+        void onVictory();
+    }
+    private OnVictoryListener victoryListener;
 
-        // 1. 初始化主窗口（Stage 对应 Swing JFrame）
-        initStage();
+    public void setOnVictoryListener(OnVictoryListener listener) {
+        this.victoryListener = listener;
+    }
 
+    public GameTwoFX() {
         // 2. 初始化布局（BorderPane 对应原 BorderLayout，分上中下区域）
-        BorderPane root = new BorderPane();
+        root = new BorderPane();
 
         // 3. 初始化倒计时标签（放在顶部）
         initCountDownLabel();
@@ -92,33 +94,33 @@ public class GameTwoFX extends Application {
         BorderPane.setAlignment(topVBox, Pos.TOP_LEFT);
 
         root.setTop(topVBox);
-        // 6. 初始化场景（Scene 对应原 JFrame 的 ContentPane）
-        Scene scene = new Scene(root, 603, 700);
-        // 绑定按键事件（控制长条移动，替代原 KeyListener）
-        initKeyEvents(scene);
-
-        // 7. 绑定场景到窗口，显示窗口
-        primaryStage.setScene(scene);
-        primaryStage.show();
+//        // 6. 初始化场景（Scene 对应原 JFrame 的 ContentPane）
+//        Scene scene = new Scene(root, 603, 700);
+//        // 绑定按键事件（控制长条移动，替代原 KeyListener）
+//        initKeyEvents(scene);
 
         // 8. 启动第一关（游戏入口）
         initRound(1);
     }
 
-    // ========================= 窗口初始化 =========================
-    /**
-     * 初始化主窗口属性（大小、标题、关闭方式等）
-     */
-    private void initStage() {
-        primaryStage.setTitle("不要让小球掉落~");  // 窗口标题（与原 Swing 一致）
-        primaryStage.setWidth(603);                // 窗口宽度（与原 Swing 一致）
-        primaryStage.setHeight(700);               // 窗口高度（与原 Swing 一致）
-        primaryStage.getIcons().add(new Image("file:picture\\gameTwo\\tq_tb.png"));
-        primaryStage.setResizable(false);          // 禁止窗口缩放（避免游戏区域变形）
-        primaryStage.centerOnScreen();             // 窗口居中（替代原 setLocationRelativeTo(null)）
-        // 窗口关闭时停止所有定时器（防止内存泄漏）
-        primaryStage.setOnCloseRequest(e -> stopAllTimelines());
+    public BorderPane getGameTwoRoot() {
+        return root;
     }
+
+//    // ========================= 窗口初始化 =========================
+//    /**
+//     * 初始化主窗口属性（大小、标题、关闭方式等）
+//     */
+//    private void initStage() {
+//        primaryStage.setTitle("不要让小球掉落~");  // 窗口标题（与原 Swing 一致）
+//        primaryStage.setWidth(603);                // 窗口宽度（与原 Swing 一致）
+//        primaryStage.setHeight(700);               // 窗口高度（与原 Swing 一致）
+//        primaryStage.getIcons().add(new Image("file:picture\\gameTwo\\tq_tb.png"));
+//        primaryStage.setResizable(false);          // 禁止窗口缩放（避免游戏区域变形）
+//        primaryStage.centerOnScreen();             // 窗口居中（替代原 setLocationRelativeTo(null)）
+//        // 窗口关闭时停止所有定时器（防止内存泄漏）
+//        primaryStage.setOnCloseRequest(e -> stopAllTimelines());
+//    }
 
     // ========================= 倒计时标签初始化 =========================
     /**
@@ -170,70 +172,6 @@ public class GameTwoFX extends Application {
         menuBar.getMenus().add(replayMenu);
 
         return menuBar;
-    }
-
-    // ========================= 按键事件初始化 =========================
-    /**
-     * 绑定按键事件（方向键控制长条移动，A/D键调整长条宽度）
-     * @param scene 场景（按键事件需绑定到场景上）
-     */
-    private void initKeyEvents(Scene scene) {
-        // 1. 按键按下事件：记录按键状态为"按下"
-        scene.setOnKeyPressed(e -> {
-            switch (e.getCode()) {
-                case LEFT:
-                    leftPressed = true;
-                    break;
-                case RIGHT:
-                    rightPressed = true;
-                    break;
-                case UP:
-                    upPressed = true;
-                    break;
-                case DOWN:
-                    downPressed = true;
-                    break;
-                case A:  // A键：长条宽度减少20（原 Swing 逻辑保留）
-                    stripWidth = Math.max(30, stripWidth - 30);  // 最小宽度25，避免消失
-                    break;
-                case D:  // D键：长条宽度增加20（原 Swing 逻辑保留）
-                    stripWidth = Math.min(680, stripWidth + 30); // 最大宽度680，避免超出窗口
-                    break;
-            }
-            // 按下按键时启动长条定时器（防止定时器未启动）
-            if (stripTimeline != null && !stripTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
-                stripTimeline.play();
-            }
-        });
-
-        // 2. 按键释放事件：记录按键状态为"未按下"
-        scene.setOnKeyReleased(e -> {
-            switch (e.getCode()) {
-                case LEFT:
-                    leftPressed = false;
-                    break;
-                case RIGHT:
-                    rightPressed = false;
-                    break;
-                case UP:
-                    upPressed = false;
-                    break;
-                case DOWN:
-                    downPressed = false;
-                    break;
-                case V: // 按一下V键，则直接通过
-                    // 停止所有定时器
-                    stopAllTimelines();
-                    showVictoryDialog();
-                    break;
-            }
-            // 所有按键都释放时，停止长条定时器（节省资源）
-            if (!leftPressed && !rightPressed && !upPressed && !downPressed) {
-                if (stripTimeline != null) {
-                    stripTimeline.stop();
-                }
-            }
-        });
     }
 
     // ========================= 关卡初始化（核心逻辑）=========================
@@ -494,7 +432,7 @@ public class GameTwoFX extends Application {
     // 显示胜利弹窗
     private void showVictoryDialog() {
         Stage dialog = new Stage();
-        dialog.initOwner(primaryStage);
+        dialog.initOwner(root.getScene().getWindow());
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("恭喜通过所有关卡！");
         dialog.setWidth(500);
@@ -524,13 +462,10 @@ public class GameTwoFX extends Application {
 
                 if (seconds[0] <= 0) {
                     dialog.close();
-                    // 关闭当前游戏，打开下一关
-                    primaryStage.close();
-                    try {
-                        new GameThreeFX().start(new Stage());
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                    if(victoryListener != null) {
+                        victoryListener.onVictory();
                     }
+
                 }
             }));
             timeline.setCycleCount(3);
@@ -552,8 +487,7 @@ public class GameTwoFX extends Application {
         // 2. 用 Platform.runLater 推迟弹窗，等待当前动画周期结束
         Platform.runLater(() -> {
             showAlert("游戏结束", "小球掉落了~");
-            // 3. 弹窗关闭后，重新启动当前关卡（原逻辑保留）
-//            initRound(currentRound);
+
         });
     }
 
@@ -589,7 +523,7 @@ public class GameTwoFX extends Application {
     /**
      * 停止所有定时器（关卡切换、窗口关闭时调用，避免内存泄漏）
      */
-    private void stopAllTimelines() {
+    public void stopAllTimelines() {
         if (ballTimeline != null) {
             ballTimeline.stop();
         }
@@ -601,8 +535,69 @@ public class GameTwoFX extends Application {
         }
     }
 
-    // ========================= 程序启动入口 =========================
-    public static void main(String[] args) {
-        launch(args);  // JavaFX 固定启动方式（触发 start 方法）
+
+    // ========================= 按键事件初始化 =========================
+    /**
+     * 绑定按键事件（方向键控制长条移动，A/D键调整长条宽度）
+     * @param scene 场景（按键事件需绑定到场景上）
+     */
+    public void setupKeyEvents(Scene scene) {
+        // 1. 按键按下事件：记录按键状态为"按下"
+        scene.setOnKeyPressed(e -> {
+            switch (e.getCode()) {
+                case LEFT:
+                    leftPressed = true;
+                    break;
+                case RIGHT:
+                    rightPressed = true;
+                    break;
+                case UP:
+                    upPressed = true;
+                    break;
+                case DOWN:
+                    downPressed = true;
+                    break;
+                case A:  // A键：长条宽度减少20（原 Swing 逻辑保留）
+                    stripWidth = Math.max(30, stripWidth - 30);  // 最小宽度25，避免消失
+                    break;
+                case D:  // D键：长条宽度增加20（原 Swing 逻辑保留）
+                    stripWidth = Math.min(680, stripWidth + 30); // 最大宽度680，避免超出窗口
+                    break;
+            }
+            // 按下按键时启动长条定时器（防止定时器未启动）
+            if (stripTimeline != null && !stripTimeline.getStatus().equals(Timeline.Status.RUNNING)) {
+                stripTimeline.play();
+            }
+        });
+
+        // 2. 按键释放事件：记录按键状态为"未按下"
+        scene.setOnKeyReleased(e -> {
+            switch (e.getCode()) {
+                case LEFT:
+                    leftPressed = false;
+                    break;
+                case RIGHT:
+                    rightPressed = false;
+                    break;
+                case UP:
+                    upPressed = false;
+                    break;
+                case DOWN:
+                    downPressed = false;
+                    break;
+                case V: // 按一下V键，则直接通过
+                    // 停止所有定时器
+                    stopAllTimelines();
+                    showVictoryDialog();
+                    break;
+            }
+            // 所有按键都释放时，停止长条定时器（节省资源）
+            if (!leftPressed && !rightPressed && !upPressed && !downPressed) {
+                if (stripTimeline != null) {
+                    stripTimeline.stop();
+                }
+            }
+        });
     }
+
 }

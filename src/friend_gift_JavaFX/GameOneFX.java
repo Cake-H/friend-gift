@@ -19,7 +19,7 @@ import javafx.util.Duration;
 
 import java.util.Random;
 
-public class GameOneFX extends Application {
+public class GameOneFX {
     // 游戏数据和状态
     private int[][] data = new int[4][4]; // 存储拼图数据
     private int x = 0, y = 0; // 空白图片的位置
@@ -36,30 +36,54 @@ public class GameOneFX extends Application {
     };
 
     private int step = 0; // 步数统计
-    private Stage primaryStage; // 主界面
     private GridPane puzzleGrid; // 拼图网格
     private Label stepLabel; // 步数标签
     private boolean showingCompleteImage = false; // 是否显示完整图片
 
-    @Override
-    public void start(Stage stage) {
-        this.primaryStage = stage;
-        initStage();
+    private BorderPane root; // 全局根布局
+
+    // 胜利回到：通知MainPage切换到GameTwo
+    public interface OnVictoryListener {
+        void onVictory();
+    }
+
+    // 重新登录回调：通知MainPage切换回Login
+    public interface OnReLoginListener {
+        void onReLogin();
+    }
+
+    private OnVictoryListener victoryListener;
+    private OnReLoginListener reLoginListener;
+
+    public GameOneFX() {
+        root = new BorderPane();
         initData();
         initUI();
-
-        stage.show();
     }
 
-    // 初始化舞台
-    private void initStage() {
-        primaryStage.setTitle("拼图单机版 v1.0");
-        primaryStage.setWidth(603);
-        primaryStage.setHeight(680);
-        primaryStage.getIcons().add(new Image("file:picture\\gameOne\\pt_tb.png"));
-        primaryStage.setResizable(false);
-        primaryStage.centerOnScreen();
+    // 对外提供游戏UI的根布局
+    public BorderPane getGameOneRoot() {
+        return root;
     }
+
+    // 设置回调的方法
+    public void setOnVictoryListener(OnVictoryListener listener) {
+        this.victoryListener = listener;
+    }
+
+    public void setOnReLoginListener(OnReLoginListener listener) {
+        this.reLoginListener = listener;
+    }
+
+//    // 初始化舞台
+//    private void initStage() {
+//        primaryStage.setTitle("拼图单机版 v1.0");
+//        primaryStage.setWidth(603);
+//        primaryStage.setHeight(680);
+//        primaryStage.getIcons().add(new Image("file:picture\\gameOne\\pt_tb.png"));
+//        primaryStage.setResizable(false);
+//        primaryStage.centerOnScreen();
+//    }
 
     // 初始化游戏数据
     private void initData() {
@@ -94,9 +118,6 @@ public class GameOneFX extends Application {
 
     // 初始化UI
     private void initUI() {
-        // 创建主容器
-        BorderPane root = new BorderPane();
-
         // 创建菜单栏
         MenuBar menuBar = createMenuBar();
         root.setTop(menuBar);
@@ -135,12 +156,6 @@ public class GameOneFX extends Application {
         gameArea.getChildren().addAll(background, gameContainer);
 
         root.setCenter(gameArea);
-
-        // 创建场景并添加键盘事件
-        Scene scene = new Scene(root);
-        setupKeyHandlers(scene);
-
-        primaryStage.setScene(scene);
     }
 
     // 创建菜单栏
@@ -175,8 +190,18 @@ public class GameOneFX extends Application {
         animalItem.setOnAction(e -> changeImage(1));
         lifeItem.setOnAction(e -> changeImage(2));
         replayItem.setOnAction(e -> restartGame());
-        reLoginItem.setOnAction(e -> reLogin());
-        closeItem.setOnAction(e -> primaryStage.close());
+
+        // 重新登录
+        reLoginItem.setOnAction(e -> {
+            if(reLoginListener != null) {
+                reLoginListener.onReLogin();
+            }
+        });
+        // 关闭游戏
+        closeItem.setOnAction(e -> {
+            Stage stage = (Stage) root.getScene().getWindow();
+            stage.close();
+        });
         accountItem.setOnAction(e -> showAccountInfo());
 
         menuBar.getMenus().addAll(functionMenu, aboutMenu);
@@ -254,7 +279,7 @@ public class GameOneFX extends Application {
     }
 
     // 设置键盘事件处理
-    private void setupKeyHandlers(Scene scene) {
+    public void setupKeyHandlers(Scene scene) {
         scene.setOnKeyPressed(event -> {
             KeyCode code = event.getCode();
 
@@ -391,7 +416,7 @@ public class GameOneFX extends Application {
     // 显示胜利弹窗
     private void showVictoryDialog() {
         Stage dialog = new Stage();
-        dialog.initOwner(primaryStage);
+        dialog.initOwner(root.getScene().getWindow());
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("恭喜通关！");
         dialog.setWidth(300);
@@ -417,16 +442,13 @@ public class GameOneFX extends Application {
             int[] seconds = {3};
             Timeline timeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> {
                 seconds[0]--;
-                countdownLabel.setText("准备进入下一关：" + seconds[0] + "秒");
+                countdownLabel.setText("准备进入下一章：" + seconds[0] + "秒");
 
                 if (seconds[0] <= 0) {
                     dialog.close();
-                    // 关闭当前游戏，打开下一关
-                    primaryStage.close();
-                    try {
-                        new GameTwoFX().start(new Stage());
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
+                    // 胜利回调
+                    if (victoryListener != null) {
+                        victoryListener.onVictory();
                     }
                 }
             }));
@@ -465,16 +487,10 @@ public class GameOneFX extends Application {
         loadPuzzleImages();
     }
 
-    // 重新登录
-    private void reLogin() {
-        primaryStage.close();
-        new LoginFX().start(new Stage());
-    }
-
     // 显示公众号信息
     private void showAccountInfo() {
         Stage dialog = new Stage();
-        dialog.initOwner(primaryStage);
+        dialog.initOwner(root.getScene().getWindow());
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.setTitle("关于我们");
         dialog.setWidth(344);
@@ -489,7 +505,4 @@ public class GameOneFX extends Application {
         dialog.show();
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
 }
